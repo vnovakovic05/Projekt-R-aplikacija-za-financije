@@ -40,6 +40,11 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+target/
+dist/
+
+# IDE settings
+.idea/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
