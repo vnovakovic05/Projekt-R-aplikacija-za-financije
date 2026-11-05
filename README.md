@@ -1,4 +1,4 @@
-# Programsko inženjerstvo — FER-UNIZG
+# Projekt R
 
 Dobro došli u središnji repozitorij kolegija **Programsko inženjerstvo** na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu.
 
