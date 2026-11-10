@@ -1,0 +1,158 @@
+name: Auto-unblock issues
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auto-unblock-project-1
+  cancel-in-progress: false
+
+jobs:
+  move-unblocked-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check project token
+        env:
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+        run: |
+          if [ -z "$PROJECTS_TOKEN" ]; then
+            echo "::error::Add the PROJECTS_TOKEN repository secret with Issues read and Projects write permissions."
+            exit 1
+          fi
+
+      - name: Move unblocked issues to To Do
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.PROJECTS_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const closedIssueNumber = context.issue.number;
+
+            const newlyUnblocked = await github.paginate(
+              "GET /repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocking",
+              { owner, repo, issue_number: closedIssueNumber, per_page: 100 }
+            );
+
+            const readyIssues = [];
+            for (const issue of newlyUnblocked) {
+              const blockers = await github.paginate(
+                "GET /repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by",
+                { owner, repo, issue_number: issue.number, per_page: 100 }
+              );
+
+              if (blockers.length > 0 && blockers.every(blocker => blocker.state === "closed")) {
+                readyIssues.push(issue);
+              }
+            }
+
+            if (readyIssues.length === 0) {
+              core.info("No dependent issues are ready to move.");
+              return;
+            }
+
+            const query = `query($login: String!, $number: Int!, $cursor: String) {
+              user(login: $login) {
+                projectV2(number: $number) {
+                  id
+                  fields(first: 100) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options { id name }
+                      }
+                    }
+                  }
+                  items(first: 100, after: $cursor) {
+                    nodes {
+                      id
+                      content {
+                        __typename
+                        ... on Issue {
+                          number
+                          repository { nameWithOwner }
+                        }
+                      }
+                      fieldValues(first: 100) {
+                        nodes {
+                          ... on ProjectV2ItemFieldSingleSelectValue {
+                            name
+                            field {
+                              ... on ProjectV2SingleSelectField { name }
+                            }
+                          }
+                        }
+                      }
+                    }
+                    pageInfo { hasNextPage endCursor }
+                  }
+                }
+              }
+            }`;
+
+            let cursor = null;
+            let project;
+            const items = [];
+            do {
+              const result = await github.graphql(query, {
+                login: "vnovakovic05",
+                number: 1,
+                cursor
+              });
+              project = result.user?.projectV2;
+              if (!project) {
+                throw new Error("Could not access user project vnovakovic05/projects/1.");
+              }
+              items.push(...project.items.nodes);
+              cursor = project.items.pageInfo.hasNextPage
+                ? project.items.pageInfo.endCursor
+                : null;
+            } while (cursor);
+
+            const statusField = project.fields.nodes.find(field => field.name === "Status");
+            const backlogOption = statusField?.options.find(option => option.name === "Backlog");
+            const todoOption = statusField?.options.find(option => option.name === "To Do");
+            if (!statusField || !backlogOption || !todoOption) {
+              throw new Error('Project 1 must have a "Status" field with "Backlog" and "To Do" options.');
+            }
+
+            const updateMutation = `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId,
+                itemId: $itemId,
+                fieldId: $fieldId,
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }`;
+
+            for (const issue of readyIssues) {
+              const item = items.find(candidate =>
+                candidate.content?.__typename === "Issue" &&
+                candidate.content.number === issue.number &&
+                candidate.content.repository.nameWithOwner.toLowerCase() === `${owner}/${repo}`.toLowerCase()
+              );
+              if (!item) {
+                core.info(`Issue #${issue.number} is not on project 1; skipping.`);
+                continue;
+              }
+
+              const status = item.fieldValues.nodes.find(value => value.field?.name === "Status")?.name;
+              if (status !== "Backlog") {
+                core.info(`Issue #${issue.number} is in "${status ?? "no status"}"; skipping.`);
+                continue;
+              }
+
+              await github.graphql(updateMutation, {
+                projectId: project.id,
+                itemId: item.id,
+                fieldId: statusField.id,
+                optionId: todoOption.id
+              });
+              core.info(`Moved issue #${issue.number} from Backlog to To Do.`);
+            }

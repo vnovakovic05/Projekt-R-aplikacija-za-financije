@@ -1,40 +1,23 @@
-# How to run
+# Pokretanje aplikacije
 
-Upute za lokalno pokretanje aplikacije. Potrebni su Node.js 22 ili noviji i Java 25. Maven Wrapper preuzima zadanu verziju Mavena automatski, stoga nije potrebno posebno instalirati Maven.
+Za pokretanje cijelog razvojnog okruženja potrebno je instalirati Docker Desktop (ili kompatibilan Docker Engine s Composeom).
 
-## Frontend
+1. U korijenu repozitorija kopirajte `.env.example` u `.env` i po potrebi prilagodite lokalne postavke baze.
+2. Pokrenite servise:
 
-U prvom terminalu, iz korijena repozitorija:
+   ```powershell
+   docker compose up --build
+   ```
 
-```powershell
-cd frontend
-npm install
-npm run dev
-```
+3. Otvorite frontend na `http://localhost:5173`. Spring Boot API dostupan je na `http://localhost:8080`, a PostgreSQL na `localhost:5432`.
+4. Za provjeru API-ja otvorite `http://localhost:8080/api/health`; očekivani odgovor je:
 
-Ako se `npm install` dugo vrti ili koristi nedostupan registry koji je podešen na računalu, prekinite ga (`Ctrl+C`) i pokušajte instalaciju s javnim npm registryjem:
+   ```json
+   {"status":"healthy"}
+   ```
 
-```powershell
-npm install --registry=https://registry.npmjs.org/ --no-audit --no-fund
-```
+Compose pokreće PostgreSQL, backend i React razvojni poslužitelj (Vite). Backend čeka da PostgreSQL prođe provjeru zdravlja. Podaci baze ostaju u Docker volumenu `postgres_data`.
 
-Ova opcija mijenja registry samo za tu naredbu i ne mijenja globalne npm postavke. Nakon instalacije pokrenite `npm run dev`.
+Za zaustavljanje servisa pritisnite `Ctrl+C`, a zatim pokrenite `docker compose down`. Za brisanje i podataka baze koristite `docker compose down --volumes`; time se trajno brišu podaci pohranjeni u volumenu.
 
-Otvorite Vite adresu prikazanu u terminalu (uobičajeno `http://localhost:5173`).
-
-## Backend
-
-U drugom terminalu, iz korijena repozitorija:
-
-```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-
-Spring Boot API dostupan je na `http://localhost:8080`. Provjerite ga otvaranjem `http://localhost:8080/api/health`; očekivani odgovor je:
-
-```json
-{"status":"healthy"}
-```
-
-Za trenutno pokretanje nije potrebno pokrenuti Docker ni PostgreSQL. Baza će biti potrebna kada aplikacija počne koristiti pohranu podataka i kada se konfigurira veza s bazom.
+Lozinka iz `.env.example` namijenjena je samo lokalnom razvojnom okruženju. Nemojte koristiti tu vrijednost za produkciju.
