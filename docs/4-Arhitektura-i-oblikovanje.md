@@ -83,9 +83,14 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 **Cilj:** Prikazati važne pohranjene entitete, njihove identifikatore i veze te dovoljno atributa za razumijevanje podataka aplikacije. ER dijagram odvojen je od reprezentativnog UML dijagrama razreda u nastavku.
 
-**ER dijagram:** [Ugradite čitljiv dijagram projekta.]  
-**Izvor dijagrama:** [Poveznica na njegov izvor.]  
-**Implementacija:** [Navedite gdje je odgovarajući model podataka definiran u projektu.]
+**ER dijagram:** [Model podataka osobnih financija](./assets/diagrams/finance-data-ERD.svg)
+**Izvor dijagrama:** [PlantUML izvor](./puml/finance-data-ERD.puml)
+**Implementacija:** Flyway migracije u `backend/src/main/resources/db/migration/`; mapiranja u `backend/src/main/java/hr/osobnefinancije/persistence/`.
+
+Model uključuje korisnike, kategorije, transakcije, mjesečne budžete po kategoriji,
+pravila dnevnih i mjesečnih troškova te postojeće ciljeve štednje i doprinose.
+Svi novčani iznosi su u EUR. Mjesečna ponavljanja stvaraju transakciju prvog
+dana mjeseca; dnevna pravila stvaraju jednu transakciju po danu.
 
 <details>
 <summary><strong>Jedna prijava poplave i povezani podaci</strong></summary>

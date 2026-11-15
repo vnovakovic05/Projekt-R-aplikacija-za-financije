@@ -1,0 +1,93 @@
+@startuml
+hide circle
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+}
+
+entity "users" as users {
+  * id : integer <<PK>>
+  --
+  name : varchar(100)
+  email : varchar(255) <<UQ>>
+  password_hash : text
+  created_at : timestamptz
+}
+
+entity "categories" as categories {
+  * id : integer <<PK>>
+  * user_id : integer <<FK>>
+  --
+  name : varchar(100)
+  type : income | expense
+  (id, user_id) <<UQ>>
+}
+
+entity "transactions" as transactions {
+  * id : integer <<PK>>
+  * user_id : integer <<FK>>
+  * category_id : integer <<FK>>
+  --
+  amount : numeric(12,2) [EUR]
+  transaction_date : date
+  description : text
+  recurring_rule_id : integer <<FK, nullable>>
+  occurrence_date : date <<nullable>>
+  created_at : timestamptz
+  (recurring_rule_id, occurrence_date) <<UQ>>
+}
+
+entity "budgets" as budgets {
+  * id : integer <<PK>>
+  * user_id : integer <<FK>>
+  * category_id : integer <<FK>>
+  --
+  amount : numeric(12,2) [EUR]
+  budget_month : date (first day)
+  (user_id, category_id, budget_month) <<UQ>>
+}
+
+entity "recurring_rules" as recurring_rules {
+  * id : integer <<PK>>
+  * user_id : integer <<FK>>
+  * category_id : integer <<FK>>
+  --
+  amount : numeric(12,2) [EUR]
+  description : text
+  frequency : DAILY | MONTHLY
+  start_date : date
+  next_occurrence : date
+  end_date : date <<nullable>>
+  active : boolean
+  created_at : timestamptz
+}
+
+entity "goals" as goals {
+  * id : integer <<PK>>
+  * user_id : integer <<FK>>
+  --
+  name : varchar(100)
+  target_amount : numeric(12,2) [EUR]
+  target_date : date <<nullable>>
+}
+
+entity "goal_contributions" as goal_contributions {
+  * id : integer <<PK>>
+  * goal_id : integer <<FK>>
+  --
+  amount : numeric(12,2) [EUR]
+  contribution_date : date
+}
+
+users ||--o{ categories : owns
+users ||--o{ transactions : owns
+categories ||--o{ transactions : classifies
+users ||--o{ budgets : owns
+categories ||--o{ budgets : limits
+users ||--o{ recurring_rules : owns
+categories ||--o{ recurring_rules : classifies
+recurring_rules ||--o{ transactions : generates
+users ||--o{ goals : owns
+goals ||--o{ goal_contributions : receives
+@enduml

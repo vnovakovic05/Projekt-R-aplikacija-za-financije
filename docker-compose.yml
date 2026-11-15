@@ -23,7 +23,10 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/${POSTGRES_DB:-finance}"
       SPRING_DATASOURCE_USERNAME: "${POSTGRES_USER:-finance}"
       SPRING_DATASOURCE_PASSWORD: "${POSTGRES_PASSWORD:-finance_dev_only}"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "${SPRING_FLYWAY_BASELINE_ON_MIGRATE:-false}"
+      FINANCE_RECURRING_ZONE: "${FINANCE_RECURRING_ZONE:-Europe/Zagreb}"
+      FINANCE_RECURRING_CRON: "${FINANCE_RECURRING_CRON:-0 0 2 * * *}"
     ports:
       - "8080:8080"
     depends_on:

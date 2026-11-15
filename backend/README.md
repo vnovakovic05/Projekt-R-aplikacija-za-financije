@@ -1,6 +1,6 @@
 # Backend
 
-Backend je REST API izrađen u Javi 25 koristeći Spring Boot. Maven Wrapper pokreće Maven bez zasebne instalacije; PostgreSQL je planirana baza, a Spring Data JPA pristup podacima.
+Backend je REST API izrađen u Javi 25 koristeći Spring Boot. Maven Wrapper pokreće Maven bez zasebne instalacije. PostgreSQL je baza, Flyway verzionira promjene sheme, a Spring Data JPA mapira podatke uz Hibernate `ddl-auto=validate`.
 
 ## Pokretanje
 
@@ -40,4 +40,10 @@ Na macOS/Linuxu:
 ```
 ```
 
-Testovi se pišu u `src/test/java` koristeći JUnit 5 i Spring MockMvc. Početni test provjerava HTTP status i JSON odgovor zdravstvene provjere.
+Testovi se pišu u `src/test/java` koristeći JUnit 5 i Spring MockMvc; uključuju
+provjeru zdravstvene rute te dnevno/mjesečno generiranje i idempotentnost
+ponavljajućih transakcija.
+
+Flyway migracije nalaze se u `src/main/resources/db/migration`. Pojedinosti o
+lokalnom pokretanju, baselineu postojeće baze i dodavanju budućih migracija
+nalaze se u [`../db/Readme.md`](../db/Readme.md).
