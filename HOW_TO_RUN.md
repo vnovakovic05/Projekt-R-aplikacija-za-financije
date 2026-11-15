@@ -16,7 +16,7 @@ Za pokretanje cijelog razvojnog okruženja potrebno je instalirati Docker Deskto
    {"status":"healthy"}
    ```
 
-Compose pokreće PostgreSQL, backend i React razvojni poslužitelj (Vite). Backend čeka da PostgreSQL prođe provjeru zdravlja. Podaci baze ostaju u Docker volumenu `postgres_data`.
+Compose pokreće PostgreSQL, backend i React razvojni poslužitelj (Vite). Frontend pri pokretanju provjerava jesu li ovisnosti u Docker volumenu usklađene s `package-lock.json` i po potrebi ih ponovno instalira. Backend čeka da PostgreSQL prođe provjeru zdravlja. Podaci baze ostaju u Docker volumenu `postgres_data`.
 
 Za zaustavljanje servisa pritisnite `Ctrl+C`, a zatim pokrenite `docker compose down`. Za brisanje i podataka baze koristite `docker compose down --volumes`; time se trajno brišu podaci pohranjeni u volumenu.
 

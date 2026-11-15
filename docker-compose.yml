@@ -34,7 +34,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    command: npm run dev -- --host 0.0.0.0
+    command: sh -c "npm ls --depth=0 || npm ci && npm run dev -- --host 0.0.0.0"
     environment:
       CHOKIDAR_USEPOLLING: "true"
     ports:
