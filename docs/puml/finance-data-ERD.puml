@@ -29,6 +29,7 @@ entity "transactions" as transactions {
   * user_id : integer <<FK>>
   * category_id : integer <<FK>>
   --
+  category_type : expense
   amount : numeric(12,2) [EUR]
   transaction_date : date
   description : text
@@ -43,6 +44,7 @@ entity "budgets" as budgets {
   * user_id : integer <<FK>>
   * category_id : integer <<FK>>
   --
+  category_type : income | expense
   amount : numeric(12,2) [EUR]
   budget_month : date (first day)
   (user_id, category_id, budget_month) <<UQ>>
@@ -70,6 +72,7 @@ entity "goals" as goals {
   name : varchar(100)
   target_amount : numeric(12,2) [EUR]
   target_date : date <<nullable>>
+  created_at : timestamptz
 }
 
 entity "goal_contributions" as goal_contributions {

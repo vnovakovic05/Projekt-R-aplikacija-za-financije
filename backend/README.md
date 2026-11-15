@@ -42,7 +42,7 @@ Na macOS/Linuxu:
 
 Testovi se pišu u `src/test/java` koristeći JUnit 5 i Spring MockMvc; uključuju
 provjeru zdravstvene rute te dnevno/mjesečno generiranje i idempotentnost
-ponavljajućih transakcija.
+ponavljajućih transakcija za kategorije prihoda i rashoda.
 
 Flyway migracije nalaze se u `src/main/resources/db/migration`. Pojedinosti o
 lokalnom pokretanju, baselineu postojeće baze i dodavanju budućih migracija

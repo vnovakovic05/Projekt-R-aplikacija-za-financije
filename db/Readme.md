@@ -10,14 +10,32 @@ kontejnera prije provjere mapiranja pomoću Hibernatea.
   kategorija, transakcija i ciljeva štednje.
 - `V2__add_budgets_and_recurring_rules.sql` dodaje mjesečne budžete i pravila
   ponavljanja te povezuje generirane transakcije s pravilom i datumom pojave.
+- `V3__add_delete_actions_and_goal_metadata.sql` definira ponašanje brisanja,
+  jedinstvenost korisničkih kategorija te vrijeme stvaranja ciljeva štednje.
+- `V4__normalize_unique_values_and_support_income_recurring_rules.sql` provodi
+  jedinstvenost emailova i kategorija bez obzira na velika/mala slova ili rubne
+  razmake te dopušta ponavljajuća pravila prihoda i ograničava budžete na
+  kategorije rashoda.
 
 Iznosi su u EUR i spremljeni su kao `numeric(12, 2)`. Budžeti su mjesečni i
-vežu se uz kategoriju. Pravila troškova podržavaju `DAILY` i `MONTHLY`; mjesečna
+vežu se uz kategoriju rashoda. Ponavljajuća pravila podržavaju prihod ili rashod
+ovisno o tipu povezane kategorije, uz frekvencije `DAILY` i `MONTHLY`; mjesečna
 pravila imaju pojavu prvog dana u mjesecu. Jedinstveno ograničenje na pravilu i
 datumu pojave štiti od duplikata. Scheduler pokreće obradu svakog dana u 02:00
 vremenske zone `Europe/Zagreb` (podesivo preko `FINANCE_RECURRING_ZONE` i
 `FINANCE_RECURRING_CRON`) te nadoknađuje propuštene pojave nakon prekida rada.
-Pravilo mora biti vezano uz kategoriju rashoda.
+Pravilo mora biti vezano uz kategoriju čiji tip odgovara tipu pravila.
+Emailovi i nazivi kategorija uspoređuju se nakon uklanjanja rubnih razmaka i
+pretvorbe u mala slova. Ako postojeća baza sadrži takve duplikate, V4 će se
+zaustaviti s jasnom porukom o pogrešci; potrebno ih je razriješiti prije
+primjene migracije.
+
+Kategorija s transakcijama ne može se obrisati. Ograničenje je odgođeno do
+kraja transakcije kako bi brisanje korisnika moglo kaskadno ukloniti i njegove
+transakcije i kategorije, bez blokiranja zbog redoslijeda kaskadnih brisanja.
+U PostgreSQLu se zato koristi `NO ACTION DEFERRABLE INITIALLY DEFERRED` umjesto
+trenutačnog `RESTRICT`; pokušaj brisanja kategorije s transakcijama i dalje se
+odbija pri potvrdi transakcije.
 
 ## Nove baze
 
@@ -38,7 +56,7 @@ djelomične sheme; prvo uskladite podatke i shemu ručno uz sigurnosnu kopiju.
 ## Buduće promjene
 
 Svaku promjenu dodajte kao novu datoteku, primjerice
-`V3__add_transaction_status.sql`. Ne mijenjajte već primijenjenu migraciju:
+`V5__add_transaction_status.sql`. Ne mijenjajte već primijenjenu migraciju:
 Flyway provjerava njezin checksum. Za promjenu postojećih podataka napišite
 eksplicitni SQL korak migracije i provjerite ga nad kopijom baze prije deploya.
 Hibernate `ddl-auto=validate` prijavljuje nesklad, ali ne mijenja shemu.

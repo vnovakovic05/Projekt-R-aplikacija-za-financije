@@ -27,6 +27,9 @@ public class RecurringRuleEntity {
     @Column(name = "category_id", nullable = false)
     Integer categoryId;
 
+    @Column(name = "category_type", nullable = false, length = 10)
+    String categoryType;
+
     @Column(nullable = false, precision = 12, scale = 2)
     BigDecimal amount;
 

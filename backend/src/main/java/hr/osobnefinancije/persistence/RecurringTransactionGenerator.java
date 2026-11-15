@@ -36,9 +36,9 @@ public class RecurringTransactionGenerator {
             CategoryEntity category = categories.findByIdAndUserId(rule.categoryId, rule.userId)
                     .orElseThrow(() -> new IllegalStateException(
                             "Recurring rule " + rule.id + " references a missing category"));
-            if (!"expense".equals(category.type)) {
+            if (!category.type.equals(rule.categoryType)) {
                 throw new IllegalStateException(
-                        "Recurring rule " + rule.id + " must reference an expense category");
+                        "Recurring rule " + rule.id + " category type does not match its category");
             }
 
             while (!rule.nextOccurrence.isAfter(throughDate)

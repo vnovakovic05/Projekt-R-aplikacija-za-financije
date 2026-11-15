@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "goals")
@@ -29,6 +30,9 @@ public class GoalEntity {
 
     @Column(name = "target_date")
     LocalDate targetDate;
+
+    @Column(name = "created_at", nullable = false)
+    OffsetDateTime createdAt;
 
     protected GoalEntity() {
     }

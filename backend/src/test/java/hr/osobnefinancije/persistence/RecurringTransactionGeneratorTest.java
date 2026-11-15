@@ -41,8 +41,9 @@ class RecurringTransactionGeneratorTest {
     }
 
     @Test
-    void monthlyRuleCreatesTransactionsOnFirstOfEachMissedMonth() {
+    void monthlyIncomeRuleCreatesTransactionsOnFirstOfEachMissedMonth() {
         RecurringRuleEntity rule = rule(RecurrenceFrequency.MONTHLY, LocalDate.of(2026, 9, 1));
+        rule.categoryType = "income";
         givenDueRule(rule);
 
         int generated = generator.generateDueTransactions(LocalDate.of(2026, 11, 1));
@@ -70,7 +71,7 @@ class RecurringTransactionGeneratorTest {
         CategoryEntity category = new CategoryEntity();
         category.id = rule.categoryId;
         category.userId = rule.userId;
-        category.type = "expense";
+        category.type = rule.categoryType;
         when(recurringRules.findDueRulesForUpdate(any(LocalDate.class))).thenReturn(List.of(rule));
         when(categories.findByIdAndUserId(rule.categoryId, rule.userId)).thenReturn(Optional.of(category));
         when(transactions.existsByRecurringRuleIdAndOccurrenceDate(any(Integer.class), any(LocalDate.class)))
@@ -82,6 +83,7 @@ class RecurringTransactionGeneratorTest {
         rule.id = 1;
         rule.userId = 2;
         rule.categoryId = 3;
+        rule.categoryType = "expense";
         rule.amount = new BigDecimal("12.34");
         rule.frequency = frequency;
         rule.startDate = nextOccurrence;

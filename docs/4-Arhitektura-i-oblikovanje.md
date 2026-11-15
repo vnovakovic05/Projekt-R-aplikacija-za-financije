@@ -88,7 +88,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 **Implementacija:** Flyway migracije u `backend/src/main/resources/db/migration/`; mapiranja u `backend/src/main/java/hr/osobnefinancije/persistence/`.
 
 Model uključuje korisnike, kategorije, transakcije, mjesečne budžete po kategoriji,
-pravila dnevnih i mjesečnih troškova te postojeće ciljeve štednje i doprinose.
+pravila ponavljajućih prihoda i rashoda te postojeće ciljeve štednje i doprinose.
 Svi novčani iznosi su u EUR. Mjesečna ponavljanja stvaraju transakciju prvog
 dana mjeseca; dnevna pravila stvaraju jednu transakciju po danu.
 
